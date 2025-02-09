@@ -1,0 +1,25 @@
+﻿@page
+@using System.Web;
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1>Welcome, @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser?.Name))</h1>
+
+    @if (Model.CurrentUser != null)
+    {
+        <p>Email: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.Email))</p>
+        <p>Name: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.Name))</p>
+        <p>NRIC: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.NRIC))</p>
+        <p>Gender: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.Gender))</p>
+        <p>Date of Birth: @Model.CurrentUser.DateOfBirth</p>
+        <p>Resume: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.Resume))</p>
+        <p>Who am I: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.WhoAmI))</p>
+    }
+    else
+    {
+        <p>Error: Unable to retrieve user details.</p>
+    }
+</div>
