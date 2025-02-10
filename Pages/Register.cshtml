@@ -2,7 +2,62 @@
 @model AppSec_Assignment_2.Pages.RegisterModel
 @{
 }
+<head runat="server">
+	<script type="text/javascript">
+		
+		function ValidatePassword() {
+			var password = document.getElementById("Password").value;
+			var confirmPassword = document.getElementById("ConfirmPassword").value;
+			var errorSpan = document.getElementById("passwordError");
+			var submitButton = document.querySelector("button[type='submit']");
 
+			// Password requirements
+			const minLength = 12;
+			const hasLowercase = /[a-z]/.test(password);
+			const hasUppercase = /[A-Z]/.test(password);
+			const hasDigit = /[0-9]/.test(password);
+			const hasSpecialChar = /[!@("@")#$%^&*]/.test(password);
+
+			// Error messages
+			let errorMessage = "";
+			let errorMessage2 = "";
+
+			if (password.length < minLength) {
+				errorMessage = "Password must be at least 12 characters long!";
+			} else if (!hasLowercase) {
+				errorMessage = "Password must contain at least one lowercase letter.";
+			} else if (!hasUppercase) {
+				errorMessage = "Password must contain at least one uppercase letter.";
+			} else if (!hasDigit) {
+				errorMessage = "Password must contain at least one digit.";
+			} else if (!hasSpecialChar) {
+				errorMessage = "Password must contain at least one special character.";
+			} else if (password !== confirmPassword) {
+				errorMessage2 = "Passwords do not match!";
+			}
+
+			// Display error message and disable submit button if validation fails
+			if (errorMessage) {
+				errorSpan.textContent = errorMessage;
+				submitButton.disabled = true;
+				return false;
+			} 
+			else if (errorMessage2) {
+				errorSpan.textContent = "";
+				document.getElementById("confirmPasswordError").textContent = errorMessage2;
+				submitButton.disabled = false;
+				return true;
+			}
+			else {
+				errorSpan.textContent = "";
+				document.getElementById("confirmPasswordError").textContent = "";
+				submitButton.disabled = false;
+				return true;
+			}
+		}
+
+	</script>
+</head>
 
 <div class="container mt-5">
 	<div class="row justify-content-center align-items-center">
@@ -75,14 +130,16 @@
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.Password">Password</label>
-					<input type = "password" asp-for="RModel.Password" class="form-control" />
+					<input type="password" id="Password" asp-for="RModel.Password" class="form-control" onkeyup="ValidatePassword();" />
 					<span asp-validaton-for="RModel.Password" class="text-danger"></span>
+					<span id="passwordError" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.ConfirmPassword">Confirm Password</label>
-					<input type = "password" asp-for="RModel.ConfirmPassword" class="form-control" />
+					<input type="password" id="ConfirmPassword" asp-for="RModel.ConfirmPassword" class="form-control" onkeyup="ValidatePassword();" />
 					<span asp-validaton-for="RModel.ConfirmPassword" class="text-danger"></span>
+					<span id="confirmPasswordError" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">

@@ -11,7 +11,7 @@ namespace AppSec_Assignment_2.ViewModels
 
 		[Required]
 		[DataType(DataType.Password)]
-		[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$",
+		[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{12,}$",
 		ErrorMessage = "Password must be at least 12 characters long and include at least one lowercase letter, one uppercase letter, one number, and one special character.")]
         [Display(Name = "New Password")]
         public string NewPassword { get; set; }

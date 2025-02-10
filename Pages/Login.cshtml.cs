@@ -28,14 +28,16 @@ namespace AppSec_Assignment_2.Pages
 		public Login LModel { get; set; }
 
 		private readonly SignInManager<ApplicationUser> signInManager;
+		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly AuthDbContext _context;
 		//private readonly IConfiguration _configuration;
 		//private readonly HttpClient _httpClient;
 
-		public LoginModel(SignInManager<ApplicationUser> signInManager)
+		public LoginModel(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, AuthDbContext context)
 		{
 			this.signInManager = signInManager;
-			//_configuration = configuration;
-			//_httpClient = httpClient;
+			this._userManager = userManager;
+			_context = context;
 		}
 
         //// Model for reCAPTCHA response
@@ -108,7 +110,6 @@ namespace AppSec_Assignment_2.Pages
 
 					// Invalidate all previous sessions by updating security stamp
 					await signInManager.UserManager.UpdateSecurityStampAsync(user);
-
 					var identityResult = await signInManager.PasswordSignInAsync(LModel.EmailAddress, LModel.Password, LModel.RememberMe, false);
 					if (identityResult.Succeeded)
 					{

@@ -39,13 +39,13 @@ namespace AppSec_Assignment_2.ViewModels
 		[Required]
 		[DataType(DataType.Text)]
 		[StringLength(50, ErrorMessage = "First Name cannot exceed 50 characters.")]
-        [RegularExpression(@"^[a-zA-Z]+([ '-][a-zA-Z]+)*$", ErrorMessage = "Only alphabets, spaces, hyphens, and apostrophes are allowed.")]
+        [RegularExpression(@"^[a-zA-Z]+([ '-][a-zA-Z]+)*$", ErrorMessage = "Only alphabets, spaces, hyphens, and apostrophes are allowed in First Name.")]
         public string FirstName { get; set; }
 
 		[Required]
 		[DataType(DataType.Text)]
 		[StringLength(50, ErrorMessage = "Last Name cannot exceed 50 characters.")]
-        [RegularExpression(@"^[a-zA-Z]+([ '-][a-zA-Z]+)*$", ErrorMessage = "Only alphabets, spaces, hyphens, and apostrophes are allowed.")]
+        [RegularExpression(@"^[a-zA-Z]+([ '-][a-zA-Z]+)*$", ErrorMessage = "Only alphabets, spaces, hyphens, and apostrophes are allowed in Last Name.")]
         public string LastName { get; set; }
 
         // gender should be a dropdown list
@@ -66,7 +66,7 @@ namespace AppSec_Assignment_2.ViewModels
 
 		[Required]
 		[DataType(DataType.Password)]
-		[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$",
+		[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{12,}$",
 		ErrorMessage = "Password must be at least 12 characters long and include at least one lowercase letter, one uppercase letter, one number, and one special character.")]
 		public string Password { get; set; }
 

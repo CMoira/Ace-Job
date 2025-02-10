@@ -15,8 +15,8 @@
         <p>NRIC: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.NRIC))</p>
         <p>Gender: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.Gender))</p>
         <p>Date of Birth: @Model.CurrentUser.DateOfBirth</p>
-        <p>Resume: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.Resume))</p>
-        <p>Who am I: @Html.Raw(HttpUtility.HtmlEncode(Model.CurrentUser.WhoAmI))</p>
+            <p>Resume: @Html.Raw(HttpUtility.HtmlDecode(Model.CurrentUser.Resume))</p>
+            <p>Who am I: @Html.Raw(HttpUtility.HtmlDecode(Model.CurrentUser.WhoAmI))</p>
     }
     else
     {
