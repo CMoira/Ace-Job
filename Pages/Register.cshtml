@@ -3,6 +3,9 @@
 @{
 }
 <head runat="server">
+
+	<!--  <script src="https://www.google.com/recaptcha/api.js?render=@ViewData["SiteKey"]"></script> -->
+
 	<script type="text/javascript">
 		
 		function ValidatePassword() {
@@ -142,6 +145,8 @@
 					<span id="confirmPasswordError" class="text-danger"></span>
 				</div>
 
+				<!--  <input type="hidden" id="g-recaptcha-register-response" name="g-recaptcha-register-response" /> -->
+
 				<div class="mb-3">
 					<button type = "submit" class="btn btn-primary">Register</button>
 				</div>
@@ -149,3 +154,13 @@
 		</div>
 	</div>
 </div>
+
+<!-- 
+<script>
+	grecaptcha.ready(function () {
+		grecaptcha.execute('@ViewData["SiteKey"]', { action: 'Register' }).then(function (token) {
+			document.getElementById("g-recaptcha-register-response").value = token;
+		});
+	});
+</script> 
+-->

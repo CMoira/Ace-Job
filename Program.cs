@@ -1,7 +1,9 @@
 using AppSec_Assignment_2;
 using AppSec_Assignment_2.Model;
+using AppSec_Assignment_2.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +12,9 @@ builder.Services.AddRazorPages();
 //builder.Services.AddDbContext<AuthDbContext>();
 builder.Services.AddDbContext<AuthDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("AuthConnectionString")));
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AuthDbContext>();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+	.AddEntityFrameworkStores<AuthDbContext>()
+	.AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(Config =>
 {
@@ -41,6 +45,19 @@ builder.Services.Configure<IdentityOptions>(options =>
 	options.Lockout.MaxFailedAccessAttempts = 3;
 	options.Lockout.AllowedForNewUsers = true;
 });
+
+builder.Services.AddTransient<EmailSender>();
+//builder.Services.Configure<AuthMsgSenderOptn>(builder.Configuration);
+
+//// Reset password cookie
+//builder.Services.ConfigureApplicationCookie(options =>
+//{
+//	options.Cookie.Name = "ResetPassword";
+//    options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
+//    options.SlidingExpiration = true;
+//});
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

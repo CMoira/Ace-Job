@@ -3,7 +3,7 @@
 @{
 }
 <head>
-	<!-- <script src="https://www.google.com/recaptcha/api.js?render=6LeppdAqAAAAAHNNIkgxiZ5JbhiBHt-q7GyAzs2P"></script> -->
+	<!--  <script src="https://www.google.com/recaptcha/api.js?render=@ViewData["SiteKey"]"></script> -->
 </head>
 
 <div class="container mt-5">
@@ -41,13 +41,15 @@
 			</form>
 		</div>
 		<div asp-validation-summary="All" class="text-danger"></div>
+
+		<a class="nav-link text-dark" asp-area="" asp-page="/ResetPasswordRequest">Forgot Password? Reset Password</a>
 	</div>
 </div>
 
 <!--
 <script>
 	grecaptcha.ready(function () {
-		grecaptcha.execute('6LeppdAqAAAAAHNNIkgxiZ5JbhiBHt-q7GyAzs2P', { action: 'Login' }).then(function (token) {
+		grecaptcha.execute('@ViewData["SiteKey"]', { action: 'Login' }).then(function (token) {
 			document.getElementById("g-recaptcha-response").value = token;
 		});
 	});
