@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using AppSec_Assignment_2.Model;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 
 namespace AppSec_Assignment_2.Pages
 {
@@ -22,41 +24,82 @@ namespace AppSec_Assignment_2.Pages
             _configuration = configuration;
         }
 
-        public async Task<IActionResult> OnGet(string userId, string token)
+        private bool IsValidEmail(string email)
         {
-            if (userId == null || token == null)
-            {
-                TempData["ErrorMessage"] = "Invalid email confirmation request.";
-                return RedirectToPage("Login");
+            // Prevent XSS by checking for valid email format
+            return new EmailAddressAttribute().IsValid(email) &&
+                   Regex.IsMatch(email, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+        }
+
+        public async Task<IActionResult> OnGet(string email)
+        {
+            try {
+                var token = HttpContext.Session.GetString("2FAToken"); // Get token from session
+
+                if (string.IsNullOrEmpty(token)) {
+                    TempData["ErrorMessage"] = "Invalid email confirmation request.";
+                    return RedirectToPage("Login");
+                }
+
+                if (!IsValidEmail(email))
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid email address.");
+                    return Page();
+                }
+
+                var sessionToken = HttpContext.Session.GetString("2FAAuthToken");
+                var cookieToken = HttpContext.Request.Cookies["2FAAuthToken"];
+
+                if (string.IsNullOrEmpty(sessionToken) || sessionToken != cookieToken)
+                {
+                    TempData["ErrorMessage"] = "An error occurred while processing your request.";
+                    return Page();
+                }
+
+                var user = await signInManager.UserManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return RedirectToPage("Login");
+                }
+
+                // Invalidate all previous sessions by updating security stamp
+                await signInManager.UserManager.UpdateSecurityStampAsync(user);
+
+                HttpContext.Response.Cookies.Delete("2FAAuthToken");
+                HttpContext.Response.Cookies.Delete("2FAToken");
+                HttpContext.Response.Cookies.Delete(".AspNetCore.Session");
+
+                // Sign in the user
+                await signInManager.SignInAsync(user, false);
+
+                // Reset failed attempts after successful login
+                await signInManager.UserManager.ResetAccessFailedCountAsync(user);
+                ModelState.Clear();
+
+                // Generate session token
+                var apptoken = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "AppToken");
+                HttpContext.Session.SetString("AppToken", apptoken); // Store token in session
+
+                // Generate AuthToken for session fixation prevention
+                var authToken = Guid.NewGuid().ToString();
+                HttpContext.Session.SetString("AppAuthToken", authToken);
+                HttpContext.Response.Cookies.Append("AppAuthToken", authToken, new CookieOptions
+                {
+                    HttpOnly = true,  // Prevents access via JavaScript
+                    Secure = true,    // Ensures it’s sent over HTTPS
+                    SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                    Expires = DateTime.UtcNow.AddMinutes(30) // Session expires in 30 minutes
+                });
+
+
+                TempData["SuccessMessage"] = "Your email has been successfully confirmed! Redirecting to login...";
+                return RedirectToPage("Index");
             }
-
-            var user = await signInManager.UserManager.FindByIdAsync(userId);
-            if (user == null)
+            catch (Exception ex)
             {
-                return RedirectToPage("Login");
+                TempData["ErrorMessage"] = "An error occurred while confirming your email. Please try again.";
+                return Page();
             }
-
-            // Verify token
-            var isValidToken = await signInManager.UserManager.VerifyUserTokenAsync(user, TokenOptions.DefaultProvider, "EmailLogin", token);
-            if (!isValidToken)
-            {
-                return RedirectToPage("Login", new { error = "Invalid or expired confirmation link." });
-            }
-
-			// Invalidate all previous sessions by updating security stamp
-			await signInManager.UserManager.UpdateSecurityStampAsync(user);
-
-			// Sign in the user
-			await signInManager.SignInAsync(user, false);
-
-            // Reset failed attempts after successful login
-            await signInManager.UserManager.ResetAccessFailedCountAsync(user);
-            ModelState.Clear();
-
-            TempData["SuccessMessage"] = "Your email has been successfully confirmed! Redirecting to login...";
-
-
-            return RedirectToPage("Index");
         }
     }
 }

@@ -13,6 +13,7 @@
 			var confirmPassword = document.getElementById("ConfirmPassword").value;
 			var errorSpan = document.getElementById("passwordError");
 			var submitButton = document.querySelector("button[type='submit']");
+			var strengthSpan = document.getElementById("passwordStrength");
 
 			// Password requirements
 			const minLength = 12;
@@ -42,18 +43,21 @@
 			// Display error message and disable submit button if validation fails
 			if (errorMessage) {
 				errorSpan.textContent = errorMessage;
+				strengthSpan.textContent = "";
 				submitButton.disabled = true;
 				return false;
 			} 
 			else if (errorMessage2) {
 				errorSpan.textContent = "";
 				document.getElementById("confirmPasswordError").textContent = errorMessage2;
+				strengthSpan.textContent = "Password is strong!";
 				submitButton.disabled = false;
 				return true;
 			}
 			else {
 				errorSpan.textContent = "";
 				document.getElementById("confirmPasswordError").textContent = "";
+				strengthSpan.textContent = "Password is strong!";
 				submitButton.disabled = false;
 				return true;
 			}
@@ -94,7 +98,7 @@
 						<label for="Gender">Female</label>
 					</div>
 					<div>
-						<input type="radio" asp-for="RModel.Gender" value="Rather not Say" />
+						<input type="radio" asp-for="RModel.Gender" value="Other" />
 						<label for="Gender">Other</label>
 					</div>
 					<span asp-validaton-for="RModel.Gender" class="text-danger"></span>
@@ -133,8 +137,9 @@
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.Password">Password</label>
-					<input type="password" id="Password" asp-for="RModel.Password" class="form-control" onkeyup="ValidatePassword();" />
-					<span asp-validaton-for="RModel.Password" class="text-danger"></span>
+					<input type="password" id="Password" asp-for="RModel.Password" class="form-control" onkeyup="ValidatePassword();" /> 
+					<span id="passwordStrength" class="text-success"></span>
+					<span asp-validaton-for="RModel.Password" class="text-danger"></span> 
 					<span id="passwordError" class="text-danger"></span>
 				</div>
 

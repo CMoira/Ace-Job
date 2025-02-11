@@ -47,7 +47,16 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 
 builder.Services.AddTransient<EmailSender>();
-//builder.Services.Configure<AuthMsgSenderOptn>(builder.Configuration);
+
+// Service for the reset password token
+builder.Services.AddSession(options => 
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(15); // Expire session after 15 min
+    options.Cookie.HttpOnly = true; // Prevent JavaScript access
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Use HTTPS
+    options.Cookie.SameSite = SameSiteMode.Strict; // Prevent CSRF attacks
+});
+
 
 //// Reset password cookie
 //builder.Services.ConfigureApplicationCookie(options =>
@@ -77,6 +86,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseSession();
 
 app.MapRazorPages();
 

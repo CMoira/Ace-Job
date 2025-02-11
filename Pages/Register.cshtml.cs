@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using System.Web;
+using Newtonsoft.Json.Linq;
 
 namespace AppSec_Assignment_2.Pages
 {
@@ -84,7 +85,23 @@ namespace AppSec_Assignment_2.Pages
                         await _context.SaveChangesAsync();
 
                         await signInManager.SignInAsync(user, isPersistent: false);
-						return RedirectToPage("/Index");
+
+						// Generate session token
+						var apptoken = await userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "AppToken");
+                        HttpContext.Session.SetString("AppToken", apptoken); // Store token in session
+
+                        // Generate AuthToken for session fixation prevention
+                        var authToken = Guid.NewGuid().ToString();
+                        HttpContext.Session.SetString("AppAuthToken", authToken);
+                        HttpContext.Response.Cookies.Append("AppAuthToken", authToken, new CookieOptions
+                        {
+                            HttpOnly = true,  // Prevents access via JavaScript
+                            Secure = true,    // Ensures it’s sent over HTTPS
+                            SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+                            Expires = DateTime.UtcNow.AddMinutes(30) // Session expires in 30 minutes
+                        });
+
+                        return RedirectToPage("/Index");
 					}
 					foreach (var error in result.Errors)
 					{

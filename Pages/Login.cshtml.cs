@@ -158,20 +158,51 @@ namespace AppSec_Assignment_2.Pages
 					var identityResult = await signInManager.PasswordSignInAsync(LModel.EmailAddress, LModel.Password, LModel.RememberMe, false);
 					if (identityResult.Succeeded)
 					{
-						// Email based 2FA
-						var token = await signInManager.UserManager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "EmailLogin");
-						var confirmationLink = Url.Page("ConfirmEmail", pageHandler: null, 
-							values: new { userId = user.Id, token }, protocol: Request.Scheme);
 
-                        // Send 2FA token via email
-                        var emailSender = new EmailSender(_configuration);
-                        await emailSender.SendEmailAsync(user.Email, "Confirm your login",
-                             $"Click <a href='{confirmationLink}'>here</a> to complete your login.");
 
-                        await signInManager.SignOutAsync();
-                        TempData["EmailSentMessage"] = "We have sent you an email. Please confirm your login.";
+                        //// Invalidate all previous sessions by updating security stamp
+                        //await signInManager.UserManager.UpdateSecurityStampAsync(user);
 
-                        return RedirectToPage("Login");
+                        //// Sign in the user
+                        //await signInManager.SignInAsync(user, false);
+
+                        //// Reset failed attempts after successful login
+                        //await signInManager.UserManager.ResetAccessFailedCountAsync(user);
+                        //ModelState.Clear();
+
+                        //TempData["SuccessMessage"] = "Your email has been successfully confirmed! Redirecting to login...";
+                        //return RedirectToPage("Index");
+
+                        // Email based 2FA
+                        var token = await signInManager.UserManager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "EmailLogin");
+
+                        HttpContext.Session.SetString("2FAToken", token); // Store token in session
+
+                        // Generate AuthToken for session fixation prevention
+                        var authToken = Guid.NewGuid().ToString();
+                        HttpContext.Session.SetString("2FAAuthToken", authToken);
+                        HttpContext.Response.Cookies.Append("2FAAuthToken", authToken, new CookieOptions
+                        {
+                            HttpOnly = true,  // Prevents access via JavaScript
+                            Secure = true,    // Ensures it’s sent over HTTPS
+                            SameSite = SameSiteMode.Strict // Prevents CSRF attacks
+                        });
+
+                        var confirmationLink = Url.Page(
+							"ConfirmEmail", 
+							pageHandler: null,
+							values: new { email = user.Email },
+							protocol: Request.Scheme);
+
+						// Send 2FA token via email
+						var emailSender = new EmailSender(_configuration);
+						await emailSender.SendEmailAsync(user.Email, "Confirm your login",
+							 $"Click <a href='{confirmationLink}'>here</a> to complete your login.");
+
+						await signInManager.SignOutAsync();
+						TempData["EmailSentMessage"] = "We have sent you an email. Please confirm your login.";
+
+						return RedirectToPage("Login");
 					}
 
 					// Add account lockout logic here
@@ -191,7 +222,7 @@ namespace AppSec_Assignment_2.Pages
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex.Message);
-				ModelState.AddModelError("", "An error occurred while processing your request. Please Try again");
+				ModelState.AddModelError("", "An error occurred. Please try again");
 				return Page();
 			}
 		}

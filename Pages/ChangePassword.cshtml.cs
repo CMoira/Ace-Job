@@ -36,6 +36,16 @@ namespace AppSec_Assignment_2.Pages
         {
             try
             {
+                var sessionToken = HttpContext.Request.Cookies["AppAuthToken"];
+                var cookieToken = HttpContext.Request.Cookies["AppAuthToken"];
+
+                if (string.IsNullOrEmpty(sessionToken) || sessionToken != cookieToken)
+                {
+                    ModelState.AddModelError("", "An error occurred. Please try again.");
+                    return Page();
+                }
+
+
                 if (ModelState.IsValid)
                 {
                     CPModel.CurrentPassword = CPModel.CurrentPassword.Trim();

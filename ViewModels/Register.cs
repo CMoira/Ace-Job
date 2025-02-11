@@ -77,7 +77,7 @@ namespace AppSec_Assignment_2.ViewModels
 		[Required]
 		[DataType(DataType.Password)]
         [Display(Name = "Confirm Password")]
-        [Compare(nameof(Password), ErrorMessage = "Password and confirmation password does not match")]
+        [Compare(nameof(Password), ErrorMessage = "Password and confirmation password does not match.")]
 		public string ConfirmPassword { get; set; }
 
         [Required(ErrorMessage = "Date of Birth is required.")]
