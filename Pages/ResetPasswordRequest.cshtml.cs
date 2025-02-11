@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 using AppSec_Assignment_2.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace AppSec_Assignment_2.Pages
 {
@@ -21,6 +22,8 @@ namespace AppSec_Assignment_2.Pages
         // BindProperty to capture the email address
         [BindProperty]
         // Validate the email address
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string Email { get; set; }
 
         public async Task<IActionResult> OnPostAsync()

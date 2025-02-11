@@ -40,12 +40,14 @@ namespace AppSec_Assignment_2.ViewModels
 		[DataType(DataType.Text)]
 		[StringLength(50, ErrorMessage = "First Name cannot exceed 50 characters.")]
         [RegularExpression(@"^[a-zA-Z]+([ '-][a-zA-Z]+)*$", ErrorMessage = "Only alphabets, spaces, hyphens, and apostrophes are allowed in First Name.")]
+        [Display(Name = "First Name")]
         public string FirstName { get; set; }
 
 		[Required]
 		[DataType(DataType.Text)]
 		[StringLength(50, ErrorMessage = "Last Name cannot exceed 50 characters.")]
         [RegularExpression(@"^[a-zA-Z]+([ '-][a-zA-Z]+)*$", ErrorMessage = "Only alphabets, spaces, hyphens, and apostrophes are allowed in Last Name.")]
+        [Display(Name = "Last Name")]
         public string LastName { get; set; }
 
         // gender should be a dropdown list
@@ -61,6 +63,7 @@ namespace AppSec_Assignment_2.ViewModels
 		[DataType(DataType.EmailAddress)]
 		//[EmailAddress(ErrorMessage = "Invalid Email Address.")]
 		[RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid Email Address.")]
+        [Display(Name = "Email")]
 
         public string EmailAddress { get; set; }
 
@@ -68,17 +71,20 @@ namespace AppSec_Assignment_2.ViewModels
 		[DataType(DataType.Password)]
 		[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{12,}$",
 		ErrorMessage = "Password must be at least 12 characters long and include at least one lowercase letter, one uppercase letter, one number, and one special character.")]
+
 		public string Password { get; set; }
 
 		[Required]
 		[DataType(DataType.Password)]
-		[Compare(nameof(Password), ErrorMessage = "Password and confirmation password does not match")]
+        [Display(Name = "Confirm Password")]
+        [Compare(nameof(Password), ErrorMessage = "Password and confirmation password does not match")]
 		public string ConfirmPassword { get; set; }
 
         [Required(ErrorMessage = "Date of Birth is required.")]
         //[DataType(DataType.Date)]
         [ModelBinder(BinderType = typeof(DateOnlyModelBinder))]
         [CustomValidation(typeof(Register), "ValidateDateOfBirth")]
+        [Display(Name = "Date of Birth")]
         public DateOnly DateOfBirth { get; set; }
 
         public static ValidationResult ValidateDateOfBirth(DateOnly date, ValidationContext context)
@@ -104,6 +110,7 @@ namespace AppSec_Assignment_2.ViewModels
 
 		// whoami
 		[DataType(DataType.Text)]
-		public string? WhoAmI { get; set; } // Special characters are naturally allowed in strings
+        [Display(Name = "Who am I")]
+        public string? WhoAmI { get; set; } // Special characters are naturally allowed in strings
 	}
 }

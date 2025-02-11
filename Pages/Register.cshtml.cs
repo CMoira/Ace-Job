@@ -50,7 +50,7 @@ namespace AppSec_Assignment_2.Pages
 					var userExists = await userManager.FindByEmailAsync(RModel.EmailAddress);
 					if (userExists != null)
 					{
-						ModelState.AddModelError("", "Email already exists");
+						ModelState.AddModelError("", "Email already exists.");
 						return Page();
 					}
 
@@ -76,7 +76,8 @@ namespace AppSec_Assignment_2.Pages
                         var passwordHistory = new PasswordHistory
                         {
                             UserId = user.Id,
-                            HashedPassword = userManager.PasswordHasher.HashPassword(user, RModel.Password)
+                            HashedPassword = userManager.PasswordHasher.HashPassword(user, RModel.Password),
+                            CreatedAt = DateTime.Now
                         };
 
                         await _context.PasswordHistories.AddAsync(passwordHistory);
@@ -95,7 +96,7 @@ namespace AppSec_Assignment_2.Pages
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex.Message);
-				ModelState.AddModelError("", "An error occurred while processing your request. Please Try again");
+				ModelState.AddModelError("", "An error occurred. Please try again.");
 				return Page();
 			}
 		}

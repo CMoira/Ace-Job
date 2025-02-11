@@ -14,19 +14,22 @@ namespace AppSec_Assignment_2.Pages
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly AuthDbContext _context;
+		private readonly IConfiguration _configuration;
 
-        [BindProperty]
+		[BindProperty]
         public ChangePassword CPModel { get; set; }
 
         [TempData]
         public string SuccessMessage { get; set; }
 
-        public ChangePasswordModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, AuthDbContext context)
-        {
+        public ChangePasswordModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, 
+            AuthDbContext context, IConfiguration configuration)
+		{
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
-        }
+			_configuration = configuration;
+		}
 
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostAsync()
@@ -45,7 +48,7 @@ namespace AppSec_Assignment_2.Pages
                         return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
                     }
 
-                    // ? Step 1: Check if current password is correct first
+                    // Step 1: Check if current password is correct first
                     var passwordCheck = await _userManager.CheckPasswordAsync(user, CPModel.CurrentPassword);
                     if (!passwordCheck)
                     {
@@ -53,29 +56,43 @@ namespace AppSec_Assignment_2.Pages
                         return Page();
                     }
 
-                    // Get Last 2 Passwords
-                    var last2Passwords = await _context.PasswordHistories
+					// Enforce minimum password age
+					var lastPasswordChange = await _context.PasswordHistories
+						.Where(up => up.UserId == user.Id)
+						.OrderByDescending(up => up.CreatedAt) // Get the most recent password change
+						.Select(up => up.CreatedAt)
+						.FirstOrDefaultAsync();
+
+                    // Retrieve password policy settings from configuration
+					var minPasswordAgeDays = int.Parse(_configuration["PasswordPolicy:MinPasswordAgeDays"]);
+					var maxPasswordAgeDays = int.Parse(_configuration["PasswordPolicy:MaxPasswordAgeDays"]);
+
+					if (lastPasswordChange != null) // If user has changed password before
+					{
+                        var minPasswordAge = (DateTime.UtcNow - lastPasswordChange).TotalDays;
+						if (minPasswordAge < minPasswordAgeDays)
+						{
+							ModelState.AddModelError("", $"You must wait at least {minPasswordAgeDays} days before changing your password again.");
+							return Page();
+						}
+					}
+
+					// Get Last 2 Passwords
+					var last2Passwords = await _context.PasswordHistories
                         .Where(up => up.UserId == user.Id)
                         .OrderByDescending(up => up.CreatedAt)
                         .Take(2)
                         .Select(up => up.HashedPassword)
                         .ToListAsync();
 
-                    // Check if new password is same as last 2 passwords
-                    if (last2Passwords.Any(p => _userManager.PasswordHasher.VerifyHashedPassword(user, p, CPModel.NewPassword) == PasswordVerificationResult.Success))
+					// Check if new password is same as last 2 passwords
+					if (last2Passwords.Any(p => _userManager.PasswordHasher.VerifyHashedPassword(user, p, CPModel.NewPassword) == PasswordVerificationResult.Success))
                     {
-                        ModelState.AddModelError("", "New password cannot be the same as the last 2 passwords.");
+						ModelState.AddModelError("", "New password cannot be the same as the last 2 passwords.");
                         return Page();
                     }
 
                     var changePasswordResult = await _userManager.ChangePasswordAsync(user, CPModel.CurrentPassword, CPModel.NewPassword);
-
-                    // check if current password is correct
-                    //if (changePasswordResult.Errors.Any(e => e.Code == "PasswordMismatch"))
-                    //{
-                    //    ModelState.AddModelError("", "Incorrect current password.");
-                    //    return Page();
-                    //}
 
                     if (!changePasswordResult.Succeeded)
                     {
@@ -103,8 +120,8 @@ namespace AppSec_Assignment_2.Pages
                         .Skip(2)
                         .ExecuteDeleteAsync();
 
-                    await _signInManager.RefreshSignInAsync(user);
-                    SuccessMessage = System.Net.WebUtility.HtmlEncode("Your password has been changed.");
+                    await _signInManager.RefreshSignInAsync(user); 
+                    //SuccessMessage = System.Net.WebUtility.HtmlEncode("Your password has been changed.");
                     return RedirectToPage("/Index");
                 }
                 return Page();
@@ -112,7 +129,7 @@ namespace AppSec_Assignment_2.Pages
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                ModelState.AddModelError("", "An error occurred while processing your request. Please Try again");
+                ModelState.AddModelError("", "An error occurred. Please try again.");
                 return Page();
             }
         }

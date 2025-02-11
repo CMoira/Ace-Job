@@ -42,6 +42,13 @@
 		</div>
 		<div asp-validation-summary="All" class="text-danger"></div>
 
+		@if (TempData["EmailSentMessage"] != null)
+		{
+			<div class="alert alert-info">
+				@TempData["EmailSentMessage"]
+			</div>
+		}
+
 		<a class="nav-link text-dark" asp-area="" asp-page="/ResetPasswordRequest">Forgot Password? Reset Password</a>
 	</div>
 </div>

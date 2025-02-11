@@ -19,6 +19,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Text.Json.Serialization;
+using AppSec_Assignment_2.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace AppSec_Assignment_2.Pages
 {
@@ -124,35 +126,66 @@ namespace AppSec_Assignment_2.Pages
 					LModel.Password = LModel.Password.Trim();
 
 					var user = await signInManager.UserManager.FindByEmailAsync(LModel.EmailAddress);
-				if (user == null)
-				{
+					if (user == null)
+					{
+						ModelState.AddModelError("", "Email or Password is incorrect");
+						return Page();
+					}
+
+					// Enforce maximum password age
+					var lastPasswordChange = await _context.PasswordHistories
+						.Where(up => up.UserId == user.Id)
+						.OrderByDescending(up => up.CreatedAt) // Get the most recent password change
+						.Select(up => up.CreatedAt)
+						.FirstOrDefaultAsync();
+
+					// Retrieve password policy settings from configuration
+					var minPasswordAgeDays = int.Parse(_configuration["PasswordPolicy:MinPasswordAgeDays"]);
+					var maxPasswordAgeDays = int.Parse(_configuration["PasswordPolicy:MaxPasswordAgeDays"]);
+
+					if (lastPasswordChange != null) // If user has changed password before
+					{
+						var maxPasswordAge = (DateTime.Now - lastPasswordChange).TotalDays;
+						if (maxPasswordAge > maxPasswordAgeDays)
+						{
+							ModelState.AddModelError("", $"Password has expired. Please reset your password.");
+							return RedirectToPage("ResetPasswordRequest");
+						}
+					}
+
+					//// Invalidate all previous sessions by updating security stamp
+					//await signInManager.UserManager.UpdateSecurityStampAsync(user);
+					var identityResult = await signInManager.PasswordSignInAsync(LModel.EmailAddress, LModel.Password, LModel.RememberMe, false);
+					if (identityResult.Succeeded)
+					{
+						// Email based 2FA
+						var token = await signInManager.UserManager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "EmailLogin");
+						var confirmationLink = Url.Page("ConfirmEmail", pageHandler: null, 
+							values: new { userId = user.Id, token }, protocol: Request.Scheme);
+
+                        // Send 2FA token via email
+                        var emailSender = new EmailSender(_configuration);
+                        await emailSender.SendEmailAsync(user.Email, "Confirm your login",
+                             $"Click <a href='{confirmationLink}'>here</a> to complete your login.");
+
+                        await signInManager.SignOutAsync();
+                        TempData["EmailSentMessage"] = "We have sent you an email. Please confirm your login.";
+
+                        return RedirectToPage("Login");
+					}
+
+					// Add account lockout logic here
+					if (identityResult.IsLockedOut)
+					{
+						ModelState.AddModelError("", "Account is locked out");
+						return Page();
+					}
+
+					// Increment failed login attempts
+					await signInManager.UserManager.AccessFailedAsync(user);
+
 					ModelState.AddModelError("", "Email or Password is incorrect");
-					return Page();
 				}
-					
-				// Invalidate all previous sessions by updating security stamp
-				await signInManager.UserManager.UpdateSecurityStampAsync(user);
-				var identityResult = await signInManager.PasswordSignInAsync(LModel.EmailAddress, LModel.Password, LModel.RememberMe, false);
-				if (identityResult.Succeeded)
-				{
-					// Reset failed attempts after successful login
-					await signInManager.UserManager.ResetAccessFailedCountAsync(user);
-					ModelState.Clear();
-					return RedirectToPage("Index");
-				}
-
-				// Add account lockout logic here
-				if (identityResult.IsLockedOut)
-				{
-					ModelState.AddModelError("", "Account is locked out");
-					return Page();
-				}
-
-				// Increment failed login attempts
-				await signInManager.UserManager.AccessFailedAsync(user);
-
-				ModelState.AddModelError("", "Email or Password is incorrect");
-			}
 				return Page();
 			}
 			catch (Exception ex)

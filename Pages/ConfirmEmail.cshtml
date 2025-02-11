@@ -1,0 +1,25 @@
+﻿@page
+@model AppSec_Assignment_2.Pages.ConfirmEmailModel
+@{
+	ViewData["Title"] = "Email Confirmation";
+}
+
+<div class="container text-center">
+    <h2>Email Confirmation</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+        <meta http-equiv="refresh" content="5;url=/Login" /> <!-- Redirect after 5 seconds -->
+    }
+    else if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <a href="/Login" class="btn btn-primary mt-3">Go to Login</a>
+</div>
