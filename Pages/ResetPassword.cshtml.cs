@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace AppSec_Assignment_2.Pages
 {
@@ -31,6 +32,11 @@ namespace AppSec_Assignment_2.Pages
             // Prevent XSS by checking for valid email format
             return new EmailAddressAttribute().IsValid(email) &&
                    Regex.IsMatch(email, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+        }
+
+        public static string SanitizeInput(string input)
+        {
+            return HttpUtility.HtmlEncode(input);
         }
 
         public IActionResult OnGet(string email)
@@ -79,6 +85,9 @@ namespace AppSec_Assignment_2.Pages
                 }
                 if (ModelState.IsValid)
                 {
+                    RPModel.NewPassword = SanitizeInput(RPModel.NewPassword);
+
+
                     var user = await userManager.FindByEmailAsync(RPModel.Email);
                     if (user == null)
                     {

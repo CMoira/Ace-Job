@@ -21,6 +21,7 @@ using System.Web;
 using System.Text.Json.Serialization;
 using AppSec_Assignment_2.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Encodings.Web;
 
 namespace AppSec_Assignment_2.Pages
 {
@@ -104,6 +105,11 @@ namespace AppSec_Assignment_2.Pages
             return HttpUtility.HtmlEncode(input);
         }
 
+        public string SanitizeEmail(string email)
+        {
+            return Regex.Replace(email, @"[^a-zA-Z0-9@._\-]", ""); // Remove invalid characters
+        }
+
         [ValidateAntiForgeryToken]
 		public async Task<IActionResult> OnPostAsync()
 		{
@@ -122,7 +128,7 @@ namespace AppSec_Assignment_2.Pages
 				if (ModelState.IsValid)
 				{
 					// Sanitize input
-					LModel.EmailAddress = SanitizeInput(LModel.EmailAddress);
+					LModel.EmailAddress = SanitizeEmail(LModel.EmailAddress);
 					LModel.Password = LModel.Password.Trim();
 
 					var user = await signInManager.UserManager.FindByEmailAsync(LModel.EmailAddress);
@@ -197,7 +203,7 @@ namespace AppSec_Assignment_2.Pages
 						// Send 2FA token via email
 						var emailSender = new EmailSender(_configuration);
 						await emailSender.SendEmailAsync(user.Email, "Confirm your login",
-							 $"Click <a href='{confirmationLink}'>here</a> to complete your login.");
+							 $"Click <a href='{HtmlEncoder.Default.Encode(confirmationLink)}'>here</a> to complete your login.");
 
 						await signInManager.SignOutAsync();
 						TempData["EmailSentMessage"] = "We have sent you an email. Please confirm your login.";

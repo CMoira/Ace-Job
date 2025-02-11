@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Threading.Tasks;
 using AppSec_Assignment_2.Services;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 
 namespace AppSec_Assignment_2.Pages
 {
@@ -28,6 +30,11 @@ namespace AppSec_Assignment_2.Pages
         [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string Email { get; set; }
 
+        public string SanitizeEmail(string email)
+        {
+            return Regex.Replace(email, @"[^a-zA-Z0-9@._\-]", ""); // Remove invalid characters
+        }
+
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostAsync()
         {
@@ -35,6 +42,7 @@ namespace AppSec_Assignment_2.Pages
             {
                 if (ModelState.IsValid)
                 {
+                    Email = SanitizeEmail(Email); // Sanitize email address
                     var user = await _userManager.FindByEmailAsync(Email);
                     // If the user does not exist, redirect to the confirmation page so that the user cannot enumerate valid email addresses
                     if (user == null)
@@ -65,7 +73,7 @@ namespace AppSec_Assignment_2.Pages
 
                     // Send email with SendGrid
                     var subject = "Reset Your Password";
-                    var messsage = $"Click <a href='{resetUrl}'>here</a> to reset your password.";
+                    var messsage = $"Click <a href='{HtmlEncoder.Default.Encode(resetUrl)}'>here</a> to reset your password.";
 
                     await _emailSender.SendEmailAsync(user.Email, subject, messsage);
 

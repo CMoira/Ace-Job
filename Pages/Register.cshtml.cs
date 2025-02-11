@@ -12,6 +12,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using System.Web;
 using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace AppSec_Assignment_2.Pages
 {
@@ -39,6 +40,11 @@ namespace AppSec_Assignment_2.Pages
             return HttpUtility.HtmlEncode(input);
         }
 
+        public string SanitizeEmail(string email)
+        {
+            return Regex.Replace(email, @"[^a-zA-Z0-9@._\-]", ""); // Remove invalid characters
+        }
+
         [ValidateAntiForgeryToken]
 		public async Task<IActionResult> OnPostAsync()
 		{
@@ -47,8 +53,8 @@ namespace AppSec_Assignment_2.Pages
 				if (ModelState.IsValid) // check if the model state is valid
 				{
 
-					// Check if email exists in the database
-					var userExists = await userManager.FindByEmailAsync(RModel.EmailAddress);
+                    // Check if email exists in the database
+                    var userExists = await userManager.FindByEmailAsync(RModel.EmailAddress);
 					if (userExists != null)
 					{
 						ModelState.AddModelError("", "Email already exists.");
