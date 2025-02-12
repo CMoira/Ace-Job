@@ -41,7 +41,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 	options.Password.RequireUppercase = true;
 	options.Password.RequireNonAlphanumeric = true;
 
-	options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+	options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 	options.Lockout.MaxFailedAccessAttempts = 3;
 	options.Lockout.AllowedForNewUsers = true;
 });
@@ -57,14 +57,6 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.Strict; // Prevent CSRF attacks
 });
 
-
-//// Reset password cookie
-//builder.Services.ConfigureApplicationCookie(options =>
-//{
-//	options.Cookie.Name = "ResetPassword";
-//    options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
-//    options.SlidingExpiration = true;
-//});
 
 builder.Services.AddHttpClient();
 

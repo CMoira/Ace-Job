@@ -63,6 +63,182 @@
 			}
 		}
 
+		function ValidateFirstName() {
+			var firstName = document.getElementById("FirstName").value;
+			var errorSpan = document.getElementById("firstNameError");
+
+			// First name should only have alphabets, spaces, hyphens, and apostrophes
+			var hasOnly = /^[a-zA-Z\s-']+$/.test(firstName);
+
+			if (firstName.length < 1) {
+				errorSpan.textContent = "First name is required.";
+				return false;
+			} 
+			else if (firstName.length > 50) {
+				errorSpan.textContent = "First name cannot be more than 50 characters.";
+				return false;
+			} 
+			else if (!hasOnly) {
+				errorSpan.textContent = "Only alphabets, spaces, hyphens, and apostrophes are allowed in First Name.";
+				return false;
+			}
+			else {
+				errorSpan.textContent = "";
+				return true;
+			}
+		}
+
+		function ValidateLastName() {
+			var lastName = document.getElementById("LastName").value;
+			var errorSpan = document.getElementById("lastNameError");
+
+			// Last name should only have alphabets, spaces, hyphens, and apostrophes
+			var hasOnly = /^[a-zA-Z\s-']+$/.test(lastName);
+
+			if (lastName.length < 1) {
+				errorSpan.textContent = "Last name is required.";
+				return false;
+			}
+			else if (lastName.length > 50) {
+				errorSpan.textContent = "Last name cannot be more than 50 characters.";
+				return false;
+			}
+			else if (!hasOnly) {
+				errorSpan.textContent = "Only alphabets, spaces, hyphens, and apostrophes are allowed in last Name.";
+				return false;
+			}
+			else {
+				errorSpan.textContent = "";
+				return true;
+			}
+		}
+
+		function ValidateEmail() {
+			var email = document.getElementById("EmailAddress").value;
+			var errorSpan = document.getElementById("emailError");
+
+			// Email validation
+			var emailPattern = /^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+			var isValid = emailPattern.test(email);
+
+			if (email.length < 1) {
+				errorSpan.textContent = "Email is required.";
+				return false;
+			}
+			else if (email.length > 50) {
+				errorSpan.textContent = "Email cannot be more than 50 characters.";
+				return false;
+			}
+			else if (!isValid) {
+				errorSpan.textContent = "Invalid email format.";
+				return false;
+			}
+			else {
+				errorSpan.textContent = "";
+				return true;
+			}
+		}
+
+		function ValidateNRIC() {
+			var nric = document.getElementById("NRIC").value;
+			var errorSpan = document.getElementById("nricError");
+
+			// NRIC validation
+			var nricPattern = /^[STFGstfg]\d{7}[A-Za-z]$/;
+			var isValid = nricPattern.test(nric);
+
+			if (nric.length < 1) {
+				errorSpan.textContent = "NRIC is required.";
+				return false;
+			}
+			else if (nric.length > 9) {
+				errorSpan.textContent = "NRIC cannot be more than 9 characters.";
+				return false;
+			}
+			else if (!isValid) {
+				errorSpan.textContent = "Invalid NRIC format.";
+				return false;
+			}
+			else {
+				errorSpan.textContent = "";
+				return true;
+			}
+		}
+
+		function ValidateResume() {
+			var fileInput = document.getElementById("resume");
+			var errorSpan = document.getElementById("resumeError");
+
+			// Allowed file types
+			var allowedExtensions = /(\.docx|\.pdf)$/i;
+			var allowedMimes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+			// var maxSizeMB = 5; // Maximum file size in MB
+			// var maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+			if (fileInput.files.length === 0) {
+				errorSpan.textContent = "Please upload a resume.";
+				return false;
+			}
+
+			var file = fileInput.files[0];
+
+			// Check file extension
+			if (!allowedExtensions.test(file.name)) {
+				errorSpan.textContent = "Invalid file type. Only .docx and .pdf files are allowed.";
+				fileInput.value = ""; // Clear file input
+				return false;
+			}
+
+			// Check MIME type
+			if (!allowedMimes.includes(file.type)) {
+				errorSpan.textContent = "Invalid file format.";
+				fileInput.value = ""; // Clear file input
+				return false;
+			}
+
+			errorSpan.textContent = ""; // Clear error message if valid
+			return true;
+		}
+
+		function ValidateDateOfBirth() {
+			var dobInput = document.getElementById("dob");
+			var errorSpan = document.getElementById("dobError");
+
+			if (!dobInput.value) {
+				errorSpan.textContent = "Date of Birth is required.";
+				return false;
+			}
+
+			var dob = new Date(dobInput.value);
+			var today = new Date();
+			var minDate = new Date(1900, 0, 1); // January 1, 1900
+			var age = today.getFullYear() - dob.getFullYear();
+			var monthDiff = today.getMonth() - dob.getMonth();
+			var dayDiff = today.getDate() - dob.getDate();
+
+			// Adjust age if the birthday hasn't happened this year yet
+			if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+				age--;
+			}
+
+			// Validation Checks
+			if (dob > today) {
+				errorSpan.textContent = "Date of Birth cannot be in the future.";
+				return false;
+			}
+			if (age < 18) {
+				errorSpan.textContent = "You must be at least 18 years old to register.";
+				return false;
+			}
+			if (dob < minDate) {
+				errorSpan.textContent = "Please enter a valid Date of Birth.";
+				return false;
+			}
+
+			// Clear error message if valid
+			errorSpan.textContent = "";
+			return true;
+		}
 	</script>
 </head>
 
@@ -77,14 +253,16 @@
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.FirstName">First Name</label>
-					<input type = "Text" asp-for="RModel.FirstName" class="form-control" />
-					<span asp-validaton-for="RModel.FirstName" class="text-danger"></span>
+					<input type="Text" id="FirstName" asp-for="RModel.FirstName" class="form-control" onkeyup="ValidateFirstName();" />
+					<span asp-validation-for="RModel.FirstName" class="text-danger"></span>
+					<span id="firstNameError" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.LastName">Last Name</label>
-					<input type = "Text" asp-for="RModel.LastName" class="form-control" />
-					<span asp-validaton-for="RModel.LastName" class="text-danger"></span>
+					<input type="Text" id="LastName" asp-for="RModel.LastName" class="form-control" onkeyup="ValidateLastName();" />
+					<span asp-validation-for="RModel.LastName" class="text-danger"></span>
+					<span id="lastNameError" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
@@ -101,52 +279,56 @@
 						<input type="radio" asp-for="RModel.Gender" value="Other" />
 						<label for="Gender">Other</label>
 					</div>
-					<span asp-validaton-for="RModel.Gender" class="text-danger"></span>
+					<span asp-validation-for="RModel.Gender" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.DateOfBirth">Date of Birth</label>
-					<input type = "Date" asp-for="RModel.DateOfBirth" class="form-control" />
-					<span asp-validaton-for="RModel.DateOfBirth" class="text-danger"></span>
+					<input type="Date" id="dob" asp-for="RModel.DateOfBirth" class="form-control" onchange="ValidateDateOfBirth();" />
+					<span asp-validation-for="RModel.DateOfBirth" class="text-danger"></span>
+					<span id="dobError" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.NRIC">NRIC</label>
-					<input type = "Text" asp-for="RModel.NRIC" class="form-control" />
-					<span asp-validaton-for="RModel.NRIC" class="text-danger"></span>
+					<input type="Text" id="NRIC" asp-for="RModel.NRIC" class="form-control" onkeyup="ValidateNRIC();" />
+					<span asp-validation-for="RModel.NRIC" class="text-danger"></span>
+					<span id="nricError" class="text-danger"></span>
 				</div>
 
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.EmailAddress">Email Address</label>
-					<input type = "Text" asp-for="RModel.EmailAddress" class="form-control" />
-					<span asp-validaton-for="RModel.Email" class="text-danger"></span>
+					<input type="Text" id="EmailAddress" asp-for="RModel.EmailAddress" class="form-control" onkeyup="ValidateEmail();" />
+					<span asp-validation-for="RModel.EmailAddress" class="text-danger"></span>
+					<span id="emailError" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.Resume">Resume</label>
-					<input type = "file" asp-for="RModel.Resume" class="form-control" />
-					<span asp-validaton-for="RModel.Resume" class="text-danger"></span>
+					<input type="file" id="resume" asp-for="RModel.Resume" class="form-control" onchange="ValidateResume();" />
+					<span asp-validation-for="RModel.Resume" class="text-danger"></span>
+					<span id="resumeError" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.WhoAmI">Who Am I</label>
 					<input type = "Text" asp-for="RModel.WhoAmI" class="form-control" />
-					<span asp-validaton-for="RModel.WhoAmI" class="text-danger"></span>
+					<span asp-validation-for="RModel.WhoAmI" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.Password">Password</label>
 					<input type="password" id="Password" asp-for="RModel.Password" class="form-control" onkeyup="ValidatePassword();" /> 
 					<span id="passwordStrength" class="text-success"></span>
-					<span asp-validaton-for="RModel.Password" class="text-danger"></span> 
+					<span asp-validation-for="RModel.Password" class="text-danger"></span> 
 					<span id="passwordError" class="text-danger"></span>
 				</div>
 
 				<div class="mb-3">
 					<label class="form-label" asp-for="RModel.ConfirmPassword">Confirm Password</label>
 					<input type="password" id="ConfirmPassword" asp-for="RModel.ConfirmPassword" class="form-control" onkeyup="ValidatePassword();" />
-					<span asp-validaton-for="RModel.ConfirmPassword" class="text-danger"></span>
+					<span asp-validation-for="RModel.ConfirmPassword" class="text-danger"></span>
 					<span id="confirmPasswordError" class="text-danger"></span>
 				</div>
 
